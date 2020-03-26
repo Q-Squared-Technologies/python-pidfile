@@ -33,7 +33,7 @@ class PIDFile(object):
             return False
 
     def __enter__(self):
-        if self._replace:
+        if self._replace and os.path.exists(self._file):
             with open(self._file, "r") as f:
                 try:
                     pid = int(f.read())
