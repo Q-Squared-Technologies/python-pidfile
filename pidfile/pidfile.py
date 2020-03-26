@@ -7,9 +7,10 @@ class AlreadyRunningError(Exception):
 
 
 class PIDFile(object):
-    def __init__(self, filename='pidfile'):
+    def __init__(self, filename='pidfile', replace=False):
         self._process_name = psutil.Process(os.getpid()).cmdline()[0]
         self._file = filename
+        self._replace = replace
 
     @property
     def is_running(self):
@@ -32,7 +33,14 @@ class PIDFile(object):
             return False
 
     def __enter__(self):
-        if self.is_running:
+        if self._replace:
+            with open(self._file, "r") as f:
+                try:
+                    pid = int(f.read())
+                    psutil.Process(pid).kill()
+                except (OSError, ValueError):
+                    pass
+        elif self.is_running:
             raise AlreadyRunningError
 
         with open(self._file, "w") as f:
