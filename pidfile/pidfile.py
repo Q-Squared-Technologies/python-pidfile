@@ -37,9 +37,11 @@ class PIDFile(object):
             with open(self._file, "r") as f:
                 try:
                     pid = int(f.read())
-                    psutil.Process(pid).kill()
-                except (OSError, ValueError):
+                    process = psutil.Process(pid)
+                    process.kill()
+                except (OSError, ValueError, psutil.NoSuchProcess):
                     pass
+
         elif self.is_running:
             raise AlreadyRunningError
 
